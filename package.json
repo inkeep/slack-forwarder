@@ -1,0 +1,13 @@
+{
+  "name": "slack-bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "@slack/bolt": "^3.17.1",
+    "dotenv": "^16.4.1"
+  }
+}
