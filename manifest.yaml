@@ -2,7 +2,7 @@ _metadata:
   major_version: 1
   minor_version: 1
 display_information:
-  name: Forwarding App
+  name: Forward Thread
 features:
   app_home:
     home_tab_enabled: true
@@ -12,10 +12,10 @@ features:
     display_name: Forwarding App
     always_online: false
   shortcuts:
-    - name: Forward Message
+    - name: Forward Thread
       type: message
-      callback_id: forward_message
-      description: Forward Message
+      callback_id: forward_thread
+      description: Forward Thread
 oauth_config:
   scopes:
     bot:
@@ -23,6 +23,7 @@ oauth_config:
       - commands
       - channels:history
       - channels:read
+      - groups:history
 settings:
   event_subscriptions:
     bot_events:

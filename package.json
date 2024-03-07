@@ -4,10 +4,18 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js"
+    "dev": "NODE_ENV=development ts-node src/app.ts",
+    "start": "NODE_ENV=production node dist/app.js",
+    "build": "tsc"
   },
   "dependencies": {
     "@slack/bolt": "^3.17.1",
-    "dotenv": "^16.4.1"
+    "dotenv": "^16.4.1",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.25",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.2"
   }
 }
