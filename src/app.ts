@@ -1,4 +1,4 @@
-import { App, MessageShortcut, AwsLambdaReceiver } from "@slack/bolt";
+import { App, MessageShortcut, AwsLambdaReceiver, CodedError } from "@slack/bolt";
 import {
   AwsCallback,
   AwsEvent,
@@ -15,15 +15,17 @@ const envSchema = z.object({
   FORWARD_TO_CHANNEL: z.string(),
   NODE_ENV: z.enum(["development", "production"]).optional(),
   PORT: z.string().optional(),
+  ALLOWED_GROUP_IDS: z.string().optional().transform((val) => val ? val.split(',') : undefined),
+  ALLOWED_USER_IDS: z.string().optional().transform((val) => val ? val.split(',') : undefined),
 });
+
+const env = envSchema.parse(process.env);
 
 type Client = App["client"];
 type Thread = Awaited<ReturnType<Client["conversations"]["replies"]>>;
 type Message = NonNullable<Thread["messages"]>[0];
 
 // Validate the environment variables
-const env = envSchema.parse(process.env);
-
 const NODE_ENV = env.NODE_ENV;
 const isProduction = NODE_ENV === "production" || NODE_ENV === undefined;
 const isDevelopment = NODE_ENV === "development";
@@ -86,6 +88,25 @@ async function forwardThread({
   }
 }
 
+async function isUserInValidGroup(userId: string, groupIds: string[]) {
+  try {
+    for (const groupId of groupIds) {
+      const usersResult = await app.client.usergroups.users.list({
+        token: process.env.SLACK_BOT_TOKEN,
+        usergroup: groupId
+      });
+
+      if (usersResult.ok && usersResult.users && usersResult.users.includes(userId)) {
+        return true;
+      }
+    }
+  } catch (error) {
+    console.error(error);
+  }
+
+  return false;
+}
+
 app.shortcut("forward_thread", async ({ ack, shortcut, client }) => {
   try {
     const msgShortcut = shortcut as MessageShortcut;
@@ -100,6 +121,26 @@ app.shortcut("forward_thread", async ({ ack, shortcut, client }) => {
       return;
     }
 
+    console.log("OG msg", originalMessage.user);
+
+    const isAllowListEnabled = env.ALLOWED_USER_IDS || env.ALLOWED_GROUP_IDS;
+
+    if(isAllowListEnabled && originalMessage.user) {
+      console.log("Checking if user is in allow list");
+      console.log("Allowed user ids", env.ALLOWED_USER_IDS);
+      console.log("Allowed group ids", env.ALLOWED_GROUP_IDS);
+
+      const isUserInUserIdsAllowList = env.ALLOWED_USER_IDS && env.ALLOWED_USER_IDS.includes(originalMessage.user);
+
+      if(!isUserInUserIdsAllowList) {
+        const isUserInGroupsAllowList = env.ALLOWED_GROUP_IDS && (await isUserInValidGroup(originalMessage.user, env.ALLOWED_GROUP_IDS));
+        if(!isUserInGroupsAllowList) {
+          console.error("User is not authorized to forward messages.");
+          return;
+        }
+      }
+    }
+
     const thread = await client.conversations.replies({
       token: env.SLACK_BOT_TOKEN,
       channel: fwdFromChannel,
@@ -112,6 +153,19 @@ app.shortcut("forward_thread", async ({ ack, shortcut, client }) => {
       thread,
       serializer: serializeMessageJson,
     });
+
+    try {
+      await app.client.reactions.add({
+        token: process.env.SLACK_BOT_TOKEN,
+        channel: fwdFromChannel,
+        name: "blue_book",
+        timestamp: originalMessage.ts,
+      });
+    } catch (error: any) {
+      if (error.data && error.data.error !== 'already_reacted') {
+        return;
+      }
+    }
   } catch (error) {
     console.error("Error in forwardMessage function:", error);
   }

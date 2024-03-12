@@ -10,6 +10,7 @@
 3. Select on **From an app manifest**
 4. Pick the desired worksapce
 5. Paste in the JSON file from `manifest.json`
+6. Copy the **Signing Secret** in the **App Credentials** section to your `SLACK_SIGNING_SECRET` environment variable
 
 ### Customize appearance
 1. In the "Basic Information" tab, you can customize the **App name**, **Short description** and **App icon** used for the bot.
@@ -44,7 +45,7 @@ pnpm dev
 ```
 
 ## Deploying to production
-Follow the "Register a bot on Slack" again to register a different bot for production use.
+Follow the "Register a bot on Slack" step again to register a different Slack bot for production use.
 
 1. Deploy the app to any serverless function service that supports node.
 2. Set the `SLACK_BOT_TOKEN` and `FORWARD_TO_CHANNEL` environment variables in your production environment
@@ -59,3 +60,19 @@ Follow the "Register a bot on Slack" again to register a different bot for produ
 2. Add it to the `FORWARD_TO_CHANNEL` that should be ingested by Inkeep
 
 The bot will automatically process all threads in this channel and add it to your knowledge base.
+
+## (Optional) Allow listing users or groups
+To only allow certain users to be able to forward threads using this Slack App, you can optionally set the following two environment variables:
+
+```
+ALLOWED_GROUP_IDS=groupOneId,groupTwoId
+ALLOWED_USER_IDS=userOneId,userTwoId
+```
+
+If either env variable has a value, then the bot will check whether a user is in the user IDs OR a member of at least one of the allowed groups.
+
+To create a new a group just for this purpose:
+1. Follow the instructions [here](https://slack.com/help/articles/212906697-Create-a-user-group#create-a-user-group).
+2. (optional) Set the "Default Channels" option to the`FORWARD_TO_CHANNEL` channel so that users in this group automatically get access to it.
+3. Grab the Group ID by clicking on the **...** button and clicking the **Copy group ID** option.
+4. Add it to `ALLOWED_GROUP_IDS` environment variable

@@ -32,7 +32,9 @@
         "commands",
         "channels:history",
         "channels:read",
-        "groups:history"
+        "groups:history",
+        "reactions:write",
+        "usergroups:read"
       ]
     }
   },
