@@ -15,17 +15,25 @@
 ### Customize appearance
 1. In the "Basic Information" tab, you can customize the **App name**, **Short description** and **App icon** used for the bot.
 
-### Get your Slack bot token
-1. This token represents your bot.
-2. Go to `OAuth & Permissions` tab
-3. Copy the "**Bot User OAuth Token**"
-4. paste into `SLACK_BOT_TOKEN`
-
 ### Get your "Forward to" channel
 1. open your slack application
 2. right click on the channel you want to forward threads to
 3. copy the "**Channel ID**" (found at the bottom of the pop-up)
 4. paste it into `FORWARD_TO_CHANNEL` env variable
+
+#### Add the forwarding app to your channels
+0. Go back to the [Slack apps portal](https://api.slack.com/apps)
+1. Under **Basic Information** > **Install your app**, install the application.
+
+**Important**
+1. Add the Slack bot you registered to any channel you want users to be able to forward messages *from*.
+2. Also add the Slack bot to the channel you want messages to be forard *to*, i.e. the "FORWARD_TO_CHANNEL"
+
+### Get your Slack bot token
+1. This token represents your bot.
+2. Go to `OAuth & Permissions` tab
+3. Copy the "**Bot User OAuth Token**"
+4. paste into `SLACK_BOT_TOKEN`
 
 ## Run locally
 

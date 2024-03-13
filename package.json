@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "NODE_ENV=development ts-node src/app.ts",
     "start": "NODE_ENV=production node dist/app.js",
-    "build": "tsc",
+    "build": "esbuild ./src/app.ts --bundle --platform=node --outdir=./dist",
     "aws-deploy": "npm run build && serverless deploy",
     "aws-local": "npm run build && serverless offline"
   },
@@ -17,9 +17,12 @@
   },
   "devDependencies": {
     "@types/node": "^20.11.25",
+    "bun": "^1.0.30",
     "serverless": "^3.38.0",
     "serverless-offline": "^13.3.3",
     "ts-node": "^10.9.2",
+    "tsup": "^8.0.2",
+    "turbopack": "^0.0.1",
     "typescript": "^5.4.2"
   }
 }

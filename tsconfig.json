@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-      "target": "esnext",
+      "target": "es2020",
       "module": "CommonJS",
       "outDir": "./dist",
       "rootDir": "./src",
@@ -9,6 +9,7 @@
       "skipLibCheck": true,
       "forceConsistentCasingInFileNames": true,
       "moduleResolution": "node",
+      "isolatedModules": true
     },
     "include": ["src/**/*"]
   }

@@ -41,6 +41,10 @@ const NODE_ENV = env.NODE_ENV;
 const isProduction = NODE_ENV === "production" || NODE_ENV === undefined;
 const isDevelopment = NODE_ENV === "development";
 
+console.log("environment vars");
+console.log(env);
+console.log("isProduction", isProduction);
+
 // Initialize your custom receiver
 const awsLambdaReceiver = isProduction
   ? new AwsLambdaReceiver({
@@ -52,10 +56,12 @@ const slackAppOptions = isProduction
   ? {
       token: env.SLACK_BOT_TOKEN,
       receiver: awsLambdaReceiver,
+      appToken: env.SLACK_APP_TOKEN,
+      signingSecret: env.SLACK_SIGNING_SECRET,
     }
   : {
       token: env.SLACK_BOT_TOKEN,
-      socketMode: !isProduction,
+      socketMode: true,
       appToken: env.SLACK_APP_TOKEN,
       signingSecret: env.SLACK_SIGNING_SECRET,
     };
@@ -167,11 +173,18 @@ app.shortcut("forward_thread", async ({ ack, shortcut, client }) => {
       }
     }
 
-    const thread = await client.conversations.replies({
-      token: env.SLACK_BOT_TOKEN,
-      channel: fwdFromChannel,
-      ts: originalMessage.ts,
-    });
+    let thread: Thread | undefined;
+
+    try {
+      thread = await client.conversations.replies({
+        token: env.SLACK_BOT_TOKEN,
+        channel: fwdFromChannel,
+        ts: originalMessage.ts,
+      });
+    } catch (error) {
+      console.error("Error fetching thread:", error);
+      return;
+    }
 
     forwardThread({
       client,
@@ -190,6 +203,9 @@ app.shortcut("forward_thread", async ({ ack, shortcut, client }) => {
     } catch (error: any) {
       if (error.data && error.data.error !== "already_reacted") {
         return;
+      } else {
+        console.error("Error adding reaction:", error);
+        throw error;
       }
     }
   } catch (error) {
@@ -197,16 +213,16 @@ app.shortcut("forward_thread", async ({ ack, shortcut, client }) => {
   }
 });
 
-if (isProduction) {
-  module.exports.handler = async (
-    event: AwsEvent,
-    context: any,
-    callback: AwsCallback
-  ) => {
-    const handler = await awsLambdaReceiver!.start();
-    return handler(event, context, callback);
-  };
-}
+// if (isProduction) {
+module.exports.handler = async (
+  event: AwsEvent,
+  context: any,
+  callback: AwsCallback
+) => {
+  const handler = await awsLambdaReceiver!.start();
+  return handler(event, context, callback);
+};
+// }
 
 if (isDevelopment) {
   app
