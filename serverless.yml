@@ -1,14 +1,25 @@
 service: serverless-bolt-js
 frameworkVersion: "3"
+useDotenv: true
+package:
+  patterns:
+    - 'dist/**'
+    - '!src/**'
+    - '!node_modules/**'
+    - '!dist/**/*.map' # Exclude source maps if you have them and don't want to deploy them
 provider:
   name: aws
-  runtime: nodejs14.x
+  runtime: nodejs20.x
   environment:
     SLACK_SIGNING_SECRET: ${env:SLACK_SIGNING_SECRET}
     SLACK_BOT_TOKEN: ${env:SLACK_BOT_TOKEN}
+    SLACK_APP_TOKEN: ${env:SLACK_APP_TOKEN}
+    FORWARD_TO_CHANNEL: ${env:FORWARD_TO_CHANNEL}
+    ALLOWED_GROUP_IDS: ${env:ALLOWED_GROUP_IDS}
+    ALLOWED_USER_IDS: ${env:ALLOWED_USER_IDS}
 functions:
   slack:
-    handler: app.handler
+    handler: dist/app.handler
     events:
       - http:
           path: slack/events
